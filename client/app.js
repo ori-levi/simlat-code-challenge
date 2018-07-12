@@ -15,50 +15,107 @@ function initializeMap() {
     return map;
 }
 
-function createMarker(map, device) {
-    // Create and add a marker
-    const marker = new L.Marker([device.latitude, device.longitude]).addTo(map);
+class DevicesMarker {
+    constructor(map) {
+        this.__map = map;
+        this.__markers = [];
+        this.__delta = 0.0001;
+    }
 
-    // Label
-    // marker.bindTooltip('text', {
-    //     permanent: true,
-    //     direction: 'right'
-    // });
+    fatch() {
 
-    marker.on('click', () => {
-        const minutes = Math.floor(device.estimatedRemainingTime / 60);
-        alert(`The device estimated remaining time is ${minutes} minutes.`);
-    });
+        let data = [{
+            "timestamp": 13887000,
+            "latitude": 40.36014911643671 + this.__delta,
+            "longitude": -111.89167499542236,
+            "estimatedRemainingTime": 1704.3
+        }, {
+            "timestamp": 13888000,
+            "latitude": 40.3637788315356 + this.__delta,
+            "longitude": -111.89176082611084,
+            "estimatedRemainingTime": 1703.1
+        }, {
+            "timestamp": 13889000,
+            "latitude": 40.363811530783344 + this.__delta,
+            "longitude": -111.88652515411377,
+            "estimatedRemainingTime": 1702.2
+        }, {
+            "timestamp": 13890000,
+            "latitude": 40.36054152749099 + this.__delta,
+            "longitude": -111.886568069458,
+            "estimatedRemainingTime": 1701.5
+        }];
+
+        this.__delta += 0.0001;
+        return data;
+
+        // let data = [{
+        //     "timestamp": 13887000,
+        //     "latitude": 40.36014911643671,
+        //     "longitude": -111.89167499542236,
+        //     "estimatedRemainingTime": 1704.3
+        // }, {
+        //     "timestamp": 13888000,
+        //     "latitude": 40.3637788315356,
+        //     "longitude": -111.89176082611084,
+        //     "estimatedRemainingTime": 1703.1
+        // }, {
+        //     "timestamp": 13889000,
+        //     "latitude": 40.363811530783344,
+        //     "longitude": -111.88652515411377,
+        //     "estimatedRemainingTime": 1702.2
+        // }, {
+        //     "timestamp": 13890000,
+        //     "latitude": 40.36054152749099,
+        //     "longitude": -111.886568069458,
+        //     "estimatedRemainingTime": 1701.5
+        // }];
+        //
+        // return data;
+    }
+
+    createMarker(device) {
+        // Create and add a marker
+        const marker = new L.Marker([device.latitude, device.longitude])
+            .addTo(this.__map);
+
+        // Label
+        // marker.bindTooltip('text', {
+        //     permanent: true,
+        //     direction: 'right'
+        // });
+
+        marker.on('click', () => {
+            const minutes = Math.floor(device.estimatedRemainingTime / 60);
+            alert(`The device estimated remaining time is ${minutes} minutes.`);
+        });
+
+        this.__markers.push(marker);
+    }
+
+    removeMarkers() {
+        this.__markers.forEach(marker=> {
+            marker.remove();
+        });
+        this.__markers = [];
+    }
+
+    run(intervalSeconds = 1) {
+
+        this.removeMarkers();
+        console.log(intervalSeconds);
+
+        let data = this.fatch();
+        data.forEach(this.createMarker.bind(this));
+
+        // setInterval(this.run.bind(this), intervalSeconds * 1000,
+        //     intervalSeconds);
+    }
 }
 
 const map = initializeMap();
-
-let data = [{
-    "timestamp": 13887000,
-    "latitude": 40.36014911643671,
-    "longitude": -111.89167499542236,
-    "estimatedRemainingTime": 1704.3
-}, {
-    "timestamp": 13888000,
-    "latitude": 40.3637788315356,
-    "longitude": -111.89176082611084,
-    "estimatedRemainingTime": 1703.1
-}, {
-    "timestamp": 13889000,
-    "latitude": 40.363811530783344,
-    "longitude": -111.88652515411377,
-    "estimatedRemainingTime": 1702.2
-}, {
-    "timestamp": 13890000,
-    "latitude": 40.36054152749099,
-    "longitude": -111.886568069458,
-    "estimatedRemainingTime": 1701.5
-}];
-
-data.forEach(device => {
-    createMarker(map, device);
-
-});
+const devices = new DevicesMarker(map);
+devices.run(5);
 
 // Sample data for testing - device 1
 /*
