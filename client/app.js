@@ -1,8 +1,6 @@
-const DEBUG = true;
-
 function initializeMap() {
     // Leaflet map and base layer creation
-    const map = L.map('map').setView([40.3600019617025, -111.89497947692871], (DEBUG) ? 16 : 12);
+    const map = L.map('map').setView([40.3600019617025, -111.89497947692871], 12);
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18
     }).addTo(map);
@@ -22,56 +20,16 @@ class DevicesMarker {
         this.__delta = 0.0001;
     }
 
-    fatch() {
-
-        let data = [{
-            "timestamp": 13887000,
-            "latitude": 40.36014911643671 + this.__delta,
-            "longitude": -111.89167499542236,
-            "estimatedRemainingTime": 1704.3
-        }, {
-            "timestamp": 13888000,
-            "latitude": 40.3637788315356 + this.__delta,
-            "longitude": -111.89176082611084,
-            "estimatedRemainingTime": 1703.1
-        }, {
-            "timestamp": 13889000,
-            "latitude": 40.363811530783344 + this.__delta,
-            "longitude": -111.88652515411377,
-            "estimatedRemainingTime": 1702.2
-        }, {
-            "timestamp": 13890000,
-            "latitude": 40.36054152749099 + this.__delta,
-            "longitude": -111.886568069458,
-            "estimatedRemainingTime": 1701.5
-        }];
-
-        this.__delta += 0.0001;
-        return data;
-
-        // let data = [{
-        //     "timestamp": 13887000,
-        //     "latitude": 40.36014911643671,
-        //     "longitude": -111.89167499542236,
-        //     "estimatedRemainingTime": 1704.3
-        // }, {
-        //     "timestamp": 13888000,
-        //     "latitude": 40.3637788315356,
-        //     "longitude": -111.89176082611084,
-        //     "estimatedRemainingTime": 1703.1
-        // }, {
-        //     "timestamp": 13889000,
-        //     "latitude": 40.363811530783344,
-        //     "longitude": -111.88652515411377,
-        //     "estimatedRemainingTime": 1702.2
-        // }, {
-        //     "timestamp": 13890000,
-        //     "latitude": 40.36054152749099,
-        //     "longitude": -111.886568069458,
-        //     "estimatedRemainingTime": 1701.5
-        // }];
-        //
-        // return data;
+    fetch() {
+        fetch('http://127.0.0.1:8001/api')
+            .then(res => res.json())
+            .then(data => {
+                this.removeMarkers();
+                data.forEach(this.createMarker.bind(this));
+            })
+            .catch((error) => {
+                console.log(`failed to fetch ${error}`)
+            });
     }
 
     createMarker(device) {
@@ -89,12 +47,12 @@ class DevicesMarker {
             const minutes = Math.floor(device.estimatedRemainingTime / 60);
             alert(`The device estimated remaining time is ${minutes} minutes.`);
         });
-
+        //
         this.__markers.push(marker);
     }
 
     removeMarkers() {
-        this.__markers.forEach(marker=> {
+        this.__markers.forEach(marker => {
             marker.remove();
         });
         this.__markers = [];
@@ -102,14 +60,10 @@ class DevicesMarker {
 
     run(intervalSeconds = 1) {
 
-        this.removeMarkers();
-        console.log(intervalSeconds);
+        this.fetch();
 
-        let data = this.fatch();
-        data.forEach(this.createMarker.bind(this));
-
-        // setInterval(this.run.bind(this), intervalSeconds * 1000,
-        //     intervalSeconds);
+        setInterval(this.run.bind(this), intervalSeconds * 1000,
+            intervalSeconds);
     }
 }
 
